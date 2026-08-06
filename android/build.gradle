@@ -1,0 +1,32 @@
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = '../build'
+
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+
+// FIX: Solo asigna namespace y compileSdk a librerías de terceros viejas.
+// El hack de "apply flutter.gradle" fue eliminado porque crasha en Flutter 3.24
+// al aplicarse a librerías (com.android.library).
+subprojects { subproject ->
+    subproject.plugins.withId("com.android.library") {
+        if (subproject.android.namespace == null) {
+            subproject.android.namespace = subproject.group ?: "com.example.${subproject.name}"
+        }
+        subproject.android.compileSdkVersion = 34
+    }
+}
+
+subprojects {
+    project.evaluationDependsOn(':app')
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

@@ -1,0 +1,25 @@
+name: ar_flutter_plugin
+description: A Flutter plugin for AR core and AR kit.
+version: 0.7.3
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.16.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  vector_math: ^2.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: io.calsign.ar_flutter_plugin
+        pluginClass: ArFlutterPlugin
+      ios:
+        pluginClass: ArFlutterPlugin
