@@ -23,7 +23,7 @@ subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
 
-// 1. Forzar versión de Kotlin en classpath
+// 1. Fuerza la versión de Kotlin en todo el árbol de dependencias
 subprojects { subproject ->
     subproject.buildscript {
         repositories {
@@ -47,28 +47,27 @@ subprojects { subproject ->
     }
 }
 
-// 2. Homologar Java 17 / JVM 17 y asignación de Namespace para todos los subproyectos
-subprojects {
+// 2. Homologa Java 17 y Namespace (SIN corromper el SDK de AAPT)
+subprojects { project ->
     project.afterEvaluate { p ->
         if (p.hasProperty('android')) {
-            // Asigna namespace si falta
+            // Asigna namespace si falta para librerías legadas
             if (p.android.namespace == null) {
                 p.android.namespace = p.group ?: "com.example.${p.name}"
             }
-            p.android.compileSdkVersion = 34
-
-            // Fuerza Java 17 en la compilación Java de la librería
+            
+            // Fuerza Java 17 en la compilación de la librería
             p.android.compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_17
                 targetCompatibility = JavaVersion.VERSION_17
             }
-            
-            // Fuerza JVM Target 17 en la compilación Kotlin de la librería
-            p.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-                kotlinOptions {
-                    jvmTarget = "17"
-                }
-            }
+        }
+    }
+
+    // Fuerza JVM Target 17 en la compilación Kotlin (fuera del bloque android)
+    project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = "17"
         }
     }
 }
