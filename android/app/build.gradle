@@ -4,6 +4,7 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+// Carga segura de variables desde local.properties o valores por defecto
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -16,7 +17,7 @@ def flutterVersionCode = localProperties.getProperty('flutter.versionCode') ?: '
 def flutterVersionName = localProperties.getProperty('flutter.versionName') ?: '1.0'
 
 android {
-    namespace "com.tuempresa.room_scanner_ar" // Pon tu namespace/paquete real si difiere
+    namespace "com.tuempresa.room_scanner_ar" // Cambia a tu namespace si difiere
     compileSdkVersion 34
 
     compileOptions {
@@ -29,7 +30,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.tuempresa.room_scanner_ar" // Pon tu applicationId real si difiere
+        applicationId "com.tuempresa.room_scanner_ar" // Cambia a tu applicationId si difiere
         minSdkVersion 24
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
@@ -47,4 +48,9 @@ android {
 
 flutter {
     source '../../'
+}
+
+dependencies {
+    // Proporciona a AAPT los temas base AppCompat (Theme.AppCompat.Light.NoActionBar)
+    implementation 'androidx.appcompat:appcompat:1.6.1'
 }
