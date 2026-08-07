@@ -4,21 +4,12 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
-def localProperties = new Properties()
-def localPropertiesFile = rootProject.file('local.properties')
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader('UTF-8') { reader ->
-        localProperties.load(reader)
-    }
-}
-
-def flutterVersionCode = localProperties.getProperty('flutter.versionCode') ?: '1'
-def flutterVersionName = localProperties.getProperty('flutter.versionName') ?: '1.0'
-
 android {
-    namespace "com.tuempresa.room_scanner_ar"
-    compileSdkVersion 34
-    ndkVersion "25.1.8937393"
+    namespace "com.tuempresa.room_scanner_ar" // Pon tu namespace real
+    
+    // USAR VALORES DINÁMICOS DE FLUTTER
+    compileSdkVersion flutter.compileSdkVersion
+    ndkVersion flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -29,14 +20,10 @@ android {
         jvmTarget = '17'
     }
 
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
-    }
-
     defaultConfig {
-        applicationId "com.tuempresa.room_scanner_ar"
+        applicationId "com.tuempresa.room_scanner_ar" // Pon tu applicationId real
         minSdkVersion 24
-        targetSdkVersion 34
+        targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -51,7 +38,5 @@ android {
 }
 
 flutter {
-    source '../..'
+    source '../../'
 }
-
-dependencies {}
