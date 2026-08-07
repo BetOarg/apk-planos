@@ -1,3 +1,14 @@
+buildscript {
+    ext.kotlin_version = '1.8.22'
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
 allprojects {
     repositories {
         google()
@@ -11,13 +22,26 @@ subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
 
-// SOLUCIÓN DEFINITIVA: Inyecta namespace a plugins legados (.pub-cache) como ar_flutter_plugin
+// 1. Forza a ar_flutter_plugin y demás dependencias a usar una versión moderna de Kotlin
+subprojects {
+    project.configurations.configureEach {
+        resolutionStrategy {
+            force "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+            force "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlin_version"
+        }
+    }
+}
+
+// 2. Asigna namespace dinámico a librerías de terceros antiguas
 subprojects {
     project.afterEvaluate { p ->
         if (p.hasProperty('android')) {
             if (p.android.namespace == null) {
                 p.android.namespace = p.group ?: "com.example.${p.name}"
             }
+            p.android.compileSdkVersion = 34
         }
     }
 }
