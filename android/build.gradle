@@ -5,6 +5,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
+        classpath "com.android.tools.build:gradle:8.2.1"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -22,19 +23,31 @@ subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
 
-// 1. Forza a ar_flutter_plugin y demás dependencias a usar una versión moderna de Kotlin
-subprojects {
-    project.configurations.configureEach {
+// 1. OBLIGA A TODOS LOS SUBPROYECTOS (incluyendo ar_flutter_plugin) A USAR KOTLIN 1.8.22
+subprojects { subproject ->
+    subproject.buildscript {
+        repositories {
+            google()
+            mavenCentral()
+        }
+        configurations.configureEach {
+            resolutionStrategy {
+                force "org.jetbrains.kotlin:kotlin-gradle-plugin:$rootProject.ext.kotlin_version"
+            }
+        }
+    }
+    
+    subproject.configurations.configureEach {
         resolutionStrategy {
-            force "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-            force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-            force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-            force "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlin_version"
+            force "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.ext.kotlin_version"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$rootProject.ext.kotlin_version"
+            force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$rootProject.ext.kotlin_version"
+            force "org.jetbrains.kotlin:kotlin-stdlib-common:$rootProject.ext.kotlin_version"
         }
     }
 }
 
-// 2. Asigna namespace dinámico a librerías de terceros antiguas
+// 2. ASIGNA NAMESPACE DINÁMICO A LIBRERÍAS SIN NAMESPACE
 subprojects {
     project.afterEvaluate { p ->
         if (p.hasProperty('android')) {
