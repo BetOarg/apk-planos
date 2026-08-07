@@ -4,12 +4,28 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+// CARGA SEGURA DE VARIABLES DESDE local.properties Y DEFAULTS
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
 android {
-    namespace "com.tuempresa.room_scanner_ar" // Pon tu namespace real
-    
-    // USAR VALORES DINÁMICOS DE FLUTTER
-    compileSdkVersion flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
+    namespace "com.tuempresa.room_scanner_ar" // Conserva tu namespace real
+    compileSdkVersion 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -21,9 +37,9 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.tuempresa.room_scanner_ar" // Pon tu applicationId real
+        applicationId "com.tuempresa.room_scanner_ar" // Conserva tu applicationId real
         minSdkVersion 24
-        targetSdkVersion flutter.targetSdkVersion
+        targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
