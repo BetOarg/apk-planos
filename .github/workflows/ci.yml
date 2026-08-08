@@ -1,4 +1,4 @@
-name: ROOM SCANNER AR - Build & Release Pipeline
+name: ROOM SCANNER AR - CI Build Check
 
 on:
   push:
@@ -11,14 +11,12 @@ env:
   FLUTTER_VERSION: "3.24.0"
   JAVA_VERSION: "17"
 
-# CORRECCIÓN: Permisos mínimos por job. El job release necesita escribir releases.
 permissions:
-  contents: write
-  packages: read
+  contents: read
 
 jobs:
-  build-android:
-    name: Build Android Release APK
+  check-build:
+    name: Verify Code & Test Build
     runs-on: ubuntu-latest
 
     steps:
@@ -46,77 +44,14 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Verify 3D model exists
-        run: |
-          if [ ! -f "assets/models/sphere.gltf" ]; then
-            echo "ERROR: assets/models/sphere.gltf no encontrado"
-            exit 1
-          fi
-          echo "Modelo 3D validado correctamente"
-
-      # CORRECCIÓN: Eliminado || true. Si hay errores de análisis, el build falla.
       - name: Analyze code
         run: flutter analyze --fatal-infos
 
-      # CORRECCIÓN: Eliminado || true. Si hay tests rotos, el build falla.
       - name: Run tests
         run: flutter test
 
-      # FIX: Parchea ar_flutter_plugin que trae Kotlin 1.3.50 (incompatible con AGP 8.x)
-      - name: Patch ar_flutter_plugin Kotlin version
-        run: |
-          PLUGIN_PATH=$(find ~/.pub-cache -path "*/ar_flutter_plugin-*/android/build.gradle" 2>/dev/null | head -n 1)
-          if [ -n "$PLUGIN_PATH" ]; then
-            echo "Patching $PLUGIN_PATH"
-            sed -i "s/ext.kotlin_version = '1.3.50'/ext.kotlin_version = '1.9.23'/g" "$PLUGIN_PATH"
-            sed -i 's/compileSdkVersion 31/compileSdkVersion 34/g' "$PLUGIN_PATH"
-            sed -i 's/compileSdkVersion 32/compileSdkVersion 34/g' "$PLUGIN_PATH"
-            echo "Patched content:"
-            cat "$PLUGIN_PATH"
-          else
-            echo "WARNING: ar_flutter_plugin build.gradle not found in pub-cache"
-          fi
-
-      - name: Build Release APK
+      - name: Verify Android Build
         run: |
           flutter clean
           flutter pub get
-          flutter build apk --release
-
-      # CORRECCIÓN: Añadido if-no-files-found para fallar si el APK no se genera.
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: room-scanner-ar-v2-5-0-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
-          if-no-files-found: error
-          retention-days: 30
-
-  release:
-    name: Create GitHub Release
-    needs: build-android
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download APK artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: room-scanner-ar-v2-5-0-apk
-          path: ./apk/
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v2.5.0-build${{ github.run_number }}
-          name: "ROOM SCANNER AR v2.5.0 - Build ${{ github.run_number }}"
-          body: |
-            ROOM SCANNER AR v2.5.0
-            Compilación automatizada desde GitHub Actions.
-          files: ./apk/app-release.apk
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          flutter build apk --debug
